@@ -1,0 +1,161 @@
+% Encoding: UTF-8
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[xcolor=pdftex,dvipsnames,table]{beamer}
+\setbeamertemplate{navigation symbols}{}%remove navigation symbols
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Language settings
+% IMPORTANT: If you change the language settings, make sure to run
+% cleantex prior to any latex/pdflatex to remove all .aux files, else
+% latex might fail!
+\usepackage[english]{babel}
+%\usepackage[german]{babel}
+
+%\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+%\usepackage{mathptmx}
+
+\usepackage{setspace}
+\usepackage{color}
+\usepackage{listings}
+	
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% IMPORTANT/TODO: currently only PDF graphic files should be used, PNG
+% or JPEG may harm the Adobe Reader colour palette and result in
+% strange display colours.
+%\DeclareGraphicsExtensions{.pdf}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Presentation main settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Systemnahe Informatik}
+\subtitle{Übungsgruppe Xeon Phi}
+\author{Dominik Walter}
+\date{Sommersemester 2018}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\section*{Titlepage}
+\begin{frame}
+  \frametitle{\ }
+  \titlepage
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+	\frametitle{Memory Alignment}
+	Memory:
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 \\
+		\hline
+		\hline
+		\multicolumn{2}{|c|}{int16} &
+		\multicolumn{2}{c|}{int16} &
+		\multicolumn{2}{c|}{int16} &
+		\multicolumn{2}{c|}{int16} &
+		\multicolumn{2}{c|}{int16} &
+		\multicolumn{2}{c|}{int16} &
+		\multicolumn{2}{c|}{int16} &
+		\multicolumn{2}{c|}{int16}\\
+		\hline
+		\multicolumn{4}{|c|}{int32} &
+		\multicolumn{4}{c|}{int32} &
+		\multicolumn{4}{c|}{int32} &
+		\multicolumn{4}{c|}{int32}\\
+		\hline
+		\multicolumn{8}{|c|}{int64} &
+		\multicolumn{8}{c|}{int64}\\
+		\hline
+	\end{tabular}
+\end{frame}
+
+
+\begin{frame}[fragile]
+	\frametitle{Memory Alignment in C}
+	\begin{tabular}{|c|c|}
+		\hline
+	\begin{lstlisting}	
+struct A {
+	char c1;
+	int64_t i1;
+	char c2;
+	int32_t i2;
+};
+	\end{lstlisting} &
+	\begin{lstlisting}	
+struct B {
+	int64_t i1;
+	int32_t i2;
+	char c1;
+	char c2;
+};
+	\end{lstlisting}
+	
+	\\
+	
+	\hline
+	\begin{lstlisting}	
+struct A {
+	char c1;
+	char pad[7];
+	int64_t i1;
+	char c2;
+	char pad[3];
+	int32_t i2;
+};
+	\end{lstlisting} &
+	\begin{lstlisting}	
+struct B {
+	int64_t i1;
+	int32_t i2;
+	char c1;
+	char c2;
+	char pad[2];
+};
+	\end{lstlisting} \\
+	\hline
+	
+	\end{tabular}
+	\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Memory Alignment in RISCV}
+	\begin{lstlisting}
+	
+.data 0x100
+char_1:		.space 1	#Adresse: 0x100
+int64_t_1:	.space 8	#Adresse: 0x101
+char2_2:	.space 1	#Adresse: 0x109
+int32_t_2:	.space 4	#Adresse: 0x10A
+
+	\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Memory Alignment in RISCV}
+	\begin{lstlisting}
+	
+.data 0x100
+char_1:		.space 1	#Adresse: 0x100
+.align 3				
+int64_t_1:	.space 8	#Adresse: 0x108
+char_2:		.space 1	#Adresse: 0x110
+.align 2
+int32_t_2:	.space 4	#Adresse: 0x114
+	
+	\end{lstlisting}
+\end{frame}
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,208 @@
+% Encoding: UTF-8
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[xcolor=pdftex,dvipsnames,table]{beamer}
+\setbeamertemplate{navigation symbols}{}%remove navigation symbols
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Language settings
+% IMPORTANT: If you change the language settings, make sure to run
+% cleantex prior to any latex/pdflatex to remove all .aux files, else
+% latex might fail!
+\usepackage[english]{babel}
+%\usepackage[german]{babel}
+
+%\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+%\usepackage{mathptmx}
+
+\usepackage{setspace}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{multirow}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% IMPORTANT/TODO: currently only PDF graphic files should be used, PNG
+% or JPEG may harm the Adobe Reader colour palette and result in
+% strange display colours.
+%\DeclareGraphicsExtensions{.pdf}
+%\outputdirectory{{./pdfs/}}
+\graphicspath{{./img/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Presentation main settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Systemnahe Informatik}
+\subtitle{Übungsgruppe Xeon Phi}
+\author{Dominik Walter}
+\date{Sommersemester 2018}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\section*{Titlepage}
+\begin{frame}
+  \frametitle{\ }
+  \titlepage
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+	\frametitle{Cache-Line / Cache-Block}
+	 Block-Offset bei $byteweiser\ Adressierung$ (32 Bit):
+	\begin{tabular}{|c|c|c|c|c|c|c|c|}
+		\hline
+		0-3 & 4-7 & 8-11 & 12-15 & 16-19 & 20-23 & 24-27 & 28-31 \\
+		\hline
+		\hline
+		\multicolumn{2}{|c|}{8 Byte} &
+		\multicolumn{2}{c|}{8 Byte} &
+		\multicolumn{2}{c|}{8 Byte} &
+		\multicolumn{2}{c|}{8 Byte} \\
+		\multicolumn{2}{|c|}{$\Rightarrow$ 3 Bit} &
+		\multicolumn{2}{c|}{$\Rightarrow$ 3 Bit} &
+		\multicolumn{2}{c|}{$\Rightarrow$ 3 Bit} &
+		\multicolumn{2}{c|}{$\Rightarrow$ 3 Bit} \\
+		\hline
+		\multicolumn{4}{|c|}{16 Byte} &				\multicolumn{4}{c|}{16 Byte} \\
+		\multicolumn{4}{|c|}{$\Rightarrow$ 4 Bit} &				\multicolumn{4}{c|}{$\Rightarrow$ 4 Bit} \\
+		\hline
+		\multicolumn{8}{|c|}{32 Byte} \\
+		\multicolumn{8}{|c|}{$\Rightarrow$ 5 Bit} \\
+		\hline
+	\end{tabular}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Cache-Line / Cache-Block}
+	Block-Offset bei $wortweiser\ Adressierung$ (32 Bit):
+	\begin{tabular}{|c|c|c|c|c|c|c|c|}
+		\hline
+		0-3 & 4-7 & 8-11 & 12-15 & 16-19 & 20-23 & 24-27 & 28-31 \\
+		\hline
+		\hline
+		\multicolumn{2}{|c|}{2 Wörter} &
+		\multicolumn{2}{c|}{2 Wörter} &
+		\multicolumn{2}{c|}{2 Wörter} &
+		\multicolumn{2}{c|}{2 Wörter} \\
+		\multicolumn{2}{|c|}{$\Rightarrow$ 1 Bit} &
+		\multicolumn{2}{c|}{$\Rightarrow$ 1 Bit} &
+		\multicolumn{2}{c|}{$\Rightarrow$ 1 Bit} &
+		\multicolumn{2}{c|}{$\Rightarrow$ 1 Bit} \\
+		\hline
+		\multicolumn{4}{|c|}{4 Wörter} &				\multicolumn{4}{c|}{4 Wörter} \\
+		\multicolumn{4}{|c|}{$\Rightarrow$ 2 Bit} &				\multicolumn{4}{c|}{$\Rightarrow$ 2 Bit} \\
+		\hline
+		\multicolumn{8}{|c|}{8 Wörter} \\
+		\multicolumn{8}{|c|}{$\Rightarrow$ 3 Bit} \\
+		\hline
+	\end{tabular}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Cache-Line / Cache-Block}
+	Beispiel: 4-Bit Byte-Offset ($\Rightarrow$ 16 Byte pro Cache-Line)
+	\begin{tabular}{|c|c|c|c|c|c|c|c|}
+		\hline
+		1 & F & 2 & 9 & 6 & F & F & C \\
+		0001 & 1111 & 0010 & 1001 & 0110 & 1111 & 1111 & 1100\\
+		\hline
+		\multicolumn{7}{|c|}{Rest} &
+		Offset \\
+		\hline
+	\end{tabular}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Cache-Satz}
+		
+	Beispiel: 128 Byte großer Cache mit 16 Byte pro Cache-Line
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		Slot & Direkt-Abgebildet & 4-fach Satz-Assoziativ & Voll-Assoziativ \\
+		 & $\Rightarrow$ 3 Bit & $\Rightarrow$ 1 Bit & $\Rightarrow$ 0 Bit \\
+		\hline
+		\hline
+		0 & 0 & \multirow{4}{*}{0} & \multirow{8}{*}{0} \\
+		\cline{2-2}
+		1 & 1 &  &  \\
+		\cline{2-2}
+		2 & 2 &  &  \\
+		\cline{2-2}
+		3 & 3 &  &  \\
+		\cline{2-2}
+		\cline{3-3}
+		4 & 4 & \multirow{4}{*}{1} &  \\
+		\cline{2-2}
+		5 & 5 &  &  \\
+		\cline{2-2}
+		6 & 6 &  &  \\
+		\cline{2-2}
+		7 & 7 &  &  \\
+
+		\hline
+	\end{tabular}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Cache-Satz}
+	Beispiel: Direkt-Abgebildeter Cache
+	\begin{tabular}{|c|c|c|c|c|c|cc|c|}
+		\hline
+		1 & F & 2 & 9 & 6 & F & \multicolumn{2}{c|}{F} & C \\
+		0001 & 1111 & 0010 & 1001 & 0110 & 1111 & 1 & 111 & 1100\\
+		\hline
+		\multicolumn{7}{|c|}{Tag} &
+		 Index &
+		
+		Offset \\
+		\multicolumn{7}{|c|}{1F296F, 1} &
+		7 &
+		
+		12 \\
+		\hline
+	\end{tabular}
+
+
+	\ \\
+	Beispiel: 4-Fach Satz-Assoziativer Cache
+	\begin{tabular}{|c|c|c|c|c|c|cc|c|}
+		\hline
+		1 & F & 2 & 9 & 6 & F & \multicolumn{2}{c|}{F} & C \\
+		0001 & 1111 & 0010 & 1001 & 0110 & 1111 & 111 & 1 & 1100\\
+		\hline
+		\multicolumn{7}{|c|}{Tag} &
+		Index &
+		
+		Offset \\
+		\multicolumn{7}{|c|}{1F296F, 111} &
+		1 &
+		
+		12 \\
+		\hline
+	\end{tabular}
+	
+	\ \\	
+	Beispiel: Voll-Assoziativer Cache
+	\begin{tabular}{|c|c|c|c|c|c|c|c|}
+	\hline
+	1 & F & 2 & 9 & 6 & F & F & C \\
+	0001 & 1111 & 0010 & 1001 & 0110 & 1111 & 1111 & 1100\\
+	\hline
+	\multicolumn{7}{|c|}{Tag} &
+		
+	Offset \\
+	\multicolumn{7}{|c|}{1F296FF} &
+	
+	12 \\
+	\hline
+\end{tabular}
+\end{frame}
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

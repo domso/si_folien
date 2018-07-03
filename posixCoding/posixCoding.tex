@@ -1,0 +1,205 @@
+% Encoding: UTF-8
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[xcolor=pdftex,dvipsnames,table]{beamer}
+\setbeamertemplate{navigation symbols}{}%remove navigation symbols
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Language settings
+% IMPORTANT: If you change the language settings, make sure to run
+% cleantex prior to any latex/pdflatex to remove all .aux files, else
+% latex might fail!
+\usepackage[english]{babel}
+%\usepackage[german]{babel}
+\usecolortheme{rose}
+\usecolortheme{beaver}
+\useinnertheme[shadow]{rounded}
+\usecolortheme{dolphin}
+%\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+%\usepackage{mathptmx}
+
+\usepackage{setspace}
+\usepackage{color}
+\usepackage{listings}
+	
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% IMPORTANT/TODO: currently only PDF graphic files should be used, PNG
+% or JPEG may harm the Adobe Reader colour palette and result in
+% strange display colours.
+%\DeclareGraphicsExtensions{.pdf}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Presentation main settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Systemnahe Informatik}
+\subtitle{Übungsgruppe Xeon Phi}
+\author{Dominik Walter}
+\date{Sommersemester 2018}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\section*{Titlepage}
+\begin{frame}
+  \frametitle{\ }
+  \titlepage
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+	\frametitle{Mutex}
+	\begin{block}{Beispiel}
+		\begin{lstlisting}	
+// eventuell parallel
+pthread_mutex_lock(&mutex);
+// garantiert sequentiel
+pthread_mutex_unlock(&mutex);
+// eventuell parallel
+		\end{lstlisting}
+	\end{block}
+
+	\begin{block}{Semantik}
+		Warte bis kritischer Bereich betreten werden kann.
+	\end{block}	
+
+	\begin{block}{Verwendung}
+		Schutz einer gemeinsamen Variablen / Datenstruktur
+	\end{block}	
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Condition-Variable: Teil 1}
+	\begin{block}{Beispiel}
+		\begin{lstlisting}	
+// eventuell parallel
+pthread_mutex_lock(&mutex);
+while (condition) {
+	pthread_cond_wait(&cond, &mutex);
+}
+// garantiert sequentiel und !condition
+pthread_mutex_unlock(&mutex);
+// eventuell parallel
+		\end{lstlisting}
+	\end{block}
+	
+	\begin{block}{Semantik}
+		Warte bis spezifische Bedingung erfüllt wurde.
+	\end{block}	
+	
+	\begin{block}{Verwendung}
+		Vermeidung von spinlocks (z.B. für queue::pop())
+	\end{block}	
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Condition-Variable: Teil 2}
+	\begin{block}{Beispiel}
+		\begin{lstlisting}	
+// eventuell parallel
+pthread_mutex_lock(&mutex);
+// garantiert sequentiel
+condition = false;
+pthread_mutex_unlock(&mutex);
+// eventuell parallel
+pthread_cond_signal(&cond);
+		\end{lstlisting}
+	\end{block}
+	
+	\begin{block}{Semantik}
+		Bedingung wurde geändert und muss von allen Threads erneut überprüft werden.
+	\end{block}	
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Semaphore: Teil 1}
+	\begin{block}{Beispiel}
+		\begin{lstlisting}	
+// eventuell parallel
+sem_wait(&sem);
+// garantiert maximal n threads 
+// (-> sem_init(&sem, 0, n))
+sem_post(&sem);
+// eventuell parallel
+		\end{lstlisting}
+	\end{block}
+	
+	\begin{block}{Semantik}
+		Warte bis "kritischer" Bereich (n threads gleichzeitig) betreten werden kann.
+	\end{block}	
+	
+	\begin{block}{Verwendung}
+		Beschränkung der Parallelität
+	\end{block}	
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Semaphore: Teil 2}
+	
+	\begin{columns}
+		\begin{column}{0.52\textwidth}
+			\begin{block}{Beispiel: Consumer-Thread}
+			\begin{lstlisting}	
+sem_wait(&sem);
+//Ressource ist vorhanden
+pthread_mutex_lock(&m);
+y = queue.pop();
+pthread_mutex_unlock(&m);
+			\end{lstlisting}
+			\end{block}
+		\end{column}
+		\begin{column}{0.52\textwidth}
+		\begin{block}{Beispiel: Producer-Thread}
+			\begin{lstlisting}	
+pthread_mutex_lock(&m);
+queue.push(x);
+pthread_mutex_unlock(&m);
+sem_post(&sem);
+//Ressource ist vorhanden
+			\end{lstlisting}
+		\end{block}
+		\end{column}
+	\end{columns}
+	
+	\begin{block}{Semantik}
+		Warte bis eine abstrakte Ressource verfügbar ist. Der eigentliche Zugriff muss allerdings separat geschützt werden!
+	\end{block}	
+	
+	\begin{block}{Verwendung}
+		Producer-Consumer Modell
+	\end{block}	
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Barriere}
+	\begin{block}{Beispiel}
+		\begin{lstlisting}
+// t_id: thread-ID	
+// Phase 1: Globales Lesen
+local = buffer[t_id + 1];
+pthread_barrier_wait(&barrier);
+// Phase 2: Lokales Schreiben
+buffer[t_id] += local;
+pthread_barrier_wait(&barrier);
+		\end{lstlisting}
+	\end{block}
+	
+	\begin{block}{Semantik}
+		Warte bis n threads die Barriere erreicht haben.
+	\end{block}	
+	
+	\begin{block}{Verwendung}
+		Unterteilung in verschiedene Phasen (z.B. Bulk-Synchronisation)
+	\end{block}	
+\end{frame}
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

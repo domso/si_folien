@@ -1,0 +1,85 @@
+% Encoding: UTF-8
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[xcolor=pdftex,dvipsnames,table]{beamer}
+\setbeamertemplate{navigation symbols}{}%remove navigation symbols
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Language settings
+% IMPORTANT: If you change the language settings, make sure to run
+% cleantex prior to any latex/pdflatex to remove all .aux files, else
+% latex might fail!
+\usepackage[english]{babel}
+%\usepackage[german]{babel}
+
+%\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+%\usepackage{mathptmx}
+\usepackage{svg}
+\usepackage{setspace}
+\usepackage{color}
+\usepackage{listings}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% IMPORTANT/TODO: currently only PDF graphic files should be used, PNG
+% or JPEG may harm the Adobe Reader colour palette and result in
+% strange display colours.
+%\DeclareGraphicsExtensions{.pdf}
+%\outputdirectory{{./pdfs/}}
+\graphicspath{{./img/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Presentation main settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Systemnahe Informatik}
+\subtitle{Übungsgruppe Xeon Phi}
+\author{Dominik Walter}
+\date{Sommersemester 2018}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\section*{Titlepage}
+\begin{frame}
+  \frametitle{\ }
+  \titlepage
+
+\end{frame}
+
+\begin{frame}
+\frametitle{ARMv8 Address Space}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.7\textwidth]{virtual_physical_memory}
+	\caption {\textit{ARM Cortex-A Series Programmer’s Guide for ARMv8-A}}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{ARMv8 Descriptor Formats}
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[width=1\textwidth]{VAtable}
+		\caption {\textit{ARM Cortex-A Series Programmer’s Guide for ARMv8-A}}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{ARMv8 Table Walk}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.9\textwidth]{generating_address_of_level2_page_table_entry}
+	\caption {\textit{ARM Cortex-A Series Programmer’s Guide for ARMv8-A}}
+\end{figure}
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
